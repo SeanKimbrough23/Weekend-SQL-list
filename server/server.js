@@ -1,7 +1,7 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 const app = express();
-
+const pool= require('./modules/pool');
 // Setup body parser - to translating request body into JSON
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
@@ -11,9 +11,9 @@ app.use(bodyParser.json());
 app.use(express.static('server/public'));
 
 // Setup the router
-// to respond to requests from the `/songs` URL
-let songsRouter = require('./routes/songs.router');
-app.use('/', songsRouter);
+// to respond to requests from the `/task` URL
+let tasksRouter = require('./routes/tasks.router');
+app.use('/tasks', tasksRouter);
 
 
 // Start express
@@ -21,3 +21,4 @@ const PORT = 5000;
 app.listen(PORT, () => {
     console.log('up and running on port', PORT);
 });
+
