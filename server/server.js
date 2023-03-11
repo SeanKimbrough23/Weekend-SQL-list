@@ -13,7 +13,7 @@ app.use(express.static('server/public'));
 // Setup the router
 // to respond to requests from the `/task` URL
 let tasksRouter = require('./routes/tasks.router');
-app.use('/', tasksRouter);
+app.use('/tasks', tasksRouter);
 
 
 // Start express
@@ -22,6 +22,3 @@ app.listen(PORT, () => {
     console.log('up and running on port', PORT);
 });
 
-app.get('/tasks', (req,res)=> {
-    console.log("inside /tasks GET");
-})
