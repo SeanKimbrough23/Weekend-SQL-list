@@ -4,99 +4,108 @@ function onReady() {
   console.log("inside onReady function");
   //event listeners
   $("#submitButton").on("click", submitTasks);
+  setupClickListeners();
   //$('#tasksOut').on('click', '.submitButton', putTasks);
   getTasks();
 }
+function setupClickListeners() {
+  //$("#addButton").on("click", saveTasks);
 
-function submitTasks() {
-  let objectToSend = {
-    day: $("#date").val(),
-    task: $("#task").val(),
-    complete: $("#complete").val(),
-  };
-  console.log("Inside submitTasks:", objectToSend);
-  $.ajax({
-    type: "POST",
-    url: "/tasks",
-    data: objectToSend,
-  })
-    .then(function (response) {
-      console.log("response back from POST:", response);
-      $("input").val("");
-      getTasks();
-    })
-    .catch(function (error) {
-      alert("error adding tasks:", error);
-    });
+  //created a listener for a button not already in the html file
+  //that will run a function that on 'click', will make the specific koala
+  //ready to transfer.
+  $("#tasksOut").on("click", ".complete", completeTasks);
+  $("#tasksOut").on("click", ".deleteBtn", deleteTasks);
 }
-//  function getTasks() {
-//     $("#tasksOut").empty();
-//     $.ajax({
-//         type: 'GET',
-//         url: '/tasks'
-//     }).then(function (response) {
-//         console.log("GET /tasks response", response);
-//         // append data to the DOM
-//         for (let i = 0; i < tasks.length; i++) {
-//             $('#tasksOut').append(`
-//                 <tr data-id=${tasks[i].id}>
-//                     <td>${tasks[i].date}</td>
-//                     <td>${tasks[i].task}</td>
-//                     <td>${tasks[i].complete}</td>
-//                     <td><button class="deletebtn"> delete</button> </td>
-//                     <td><button class="updateRankBtn"> Update Rank </button> </td>
 
-//                 </tr>
-//             `);
-//         }
-//     }
-//  }
-
+//created the getKoalas function to GET koalas from the koala router
+//and get data from the Koala database.  then, render the information into the DOM under the
+//viewKoala part of the the body.
 function getTasks() {
+  console.log("in getTasks");
+  // ajax call to server to get koalas
+  $("#tasksOut").empty();
   $.ajax({
     type: "GET",
     url: "/tasks",
+  }).then(function (response) {
+    console.log("GET /tasks response", response);
+    // append data to the DOM
+
+    for (let i = 0; i < response.length; i++) {
+      if (response[i].complete == "False") {
+        $("#tasksOut").append(`
+                    <tr data-id=${response[i].id}>
+                      <td>${response[i].task}</td>
+                      <td>${response[i].complete}</td>
+                      <td>Complete</td>
+                      <td><button class=deleteBtn>Delete</button></td>
+                    </tr>
+                `);
+      } else {
+        $("#tasksOut").append(`
+                    <tr data-id=${response[i].id}>
+                        <td>${response[i].task}</td>
+                        <td>${response[i].complete}</td>
+                        <td><button class=complete>Complete</button></td>
+                      <td><button class=deleteBtn>Delete</button></td>
+                    </tr>
+                `);
+      }
+    }
+  });
+}
+
+function completeTasks() {
+  console.log("in completeTasks function", $(this));
+  // PUT request client-side
+  const tasksId = $(this).parent().parent().data().id;
+  console.log(tasksId);
+  $.ajax({
+    method: "PUT",
+    url: `/tasks/${tasksId}`,
   })
-    .then(function (response) {
-      console.log(response);
-      render(response);
+    .then((response) => {
+      console.log("Completed ready for delete by id:", tasksId);
+      getTasks();
     })
-    .catch(function (error) {
-      alert("error getting Tasks:", error);
+    .catch(() => {
+      console.log("Error changing to complete:", tasksId, error);
     });
 }
 
-function render(tasks) {
-  console.log(tasks);
-  let el = $("#tasksOut");
-  el.empty();
-  for (let i = 0; i < tasks.length; i++) {
-    $("#tasksOut").append(`
-        <tr data-id=${tasks[i].id}>
-            <td>${tasks[i].task}</td>
-            <td>${tasks[i].complete}</td>
-            <td><button class="deletebtn"> delete</button> </td>
-            <td><button class="completeBtn">complete</button> </td>
+function submitTasks() {
+  console.log("in submitTasks");
+  let payloadObject = {
+    task: $("#task").val(),
+    complete: $("#complete").val(),
+  };
+  $.ajax({
+    type: "POST",
+    url: "/tasks",
+    data: payloadObject,
+  }).then(function (response) {
+    $("input").val("");
+    getTasks();
+  });
 
-        </tr>
-    `);
-  }
+  // ajax call to server to POST tasks
 }
 
 function deleteTasks() {
-  const id = $(this).data("id");
-  const deleteThis = $(this).data("complete");
-  console.log("inside deleteTasks:", id, deleteThis);
+  console.log(`Clicked on this ${$(this)} task to delete`);
+  const id = $(this).parent().parent().data().id;
+
   $.ajax({
-    type: "PUT",
-    url: `/tasks/${id}`,
-    data: { newTasks: deleteThis },
+    method: "DELETE",
+    url: `tasks/${id}`,
   })
-    .then(function (response) {
-      console.log("response back from PUT request:", response);
+    .then((result) => {
+      console.log("deleted tasks with id: ", id);
       getTasks();
     })
-    .catch(function (error) {
-      alert("error updating:", error);
+    .catch((error) => {
+      console.log("There was an error deleting tasks from server:", error);
     });
 }
+// DELETING tasks from the server

@@ -24,12 +24,12 @@ router.post("/", (req, res) => {
   console.log("My new tasks", newTask);
   console.log(newTask);
 
-  const queryText = `INSERT INTO "to-do" ("day","task","complete")
-    VALUES ($1, $2, $3); 
+  const queryText = `INSERT INTO "to-do" ("day","task")
+    VALUES ($1, $2); 
     `; //need to start at $1 and go up to as many values as you have
 
   pool
-    .query(queryText, [newTask.day, newTask.task, newTask.complete])
+    .query(queryText, [newTask.day, newTask.task])
     .then((result) => {
       res.sendStatus(201);
     })
@@ -64,7 +64,7 @@ router.delete("/:id", (req, res) => {
 router.put("/:id", (req, res) => {
   console.log("/  PUT;", req.params.id, req.body);
   const queryText = `UPDATE "to-do" SET complete=$1 WHERE id=$2;`;
-  const values = [req.body.newComplete, req.params.id]; // params is 2nd thing in array why we need $2
+  const values = [true, req.params.id]; // params is 2nd thing in array why we need $2
   pool
     .query(queryText, values)
     .then((results) => {
